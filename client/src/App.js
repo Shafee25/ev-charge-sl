@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
+import OwnerDashboard from './pages/OwnerDashboard';
+import AddPoint from './pages/AddPoint';
+
 
 function Home() {
     return (
@@ -31,6 +34,8 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/dashboard" element={<OwnerDashboard />} />
+                <Route path="/add-point" element={<AddPoint />} />
             </Routes>
         </Router>
     );
