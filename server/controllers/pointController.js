@@ -41,3 +41,30 @@ exports.getMyPoints = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Get ALL Charging Points (Public)
+exports.getAllPoints = async (req, res) => {
+    try {
+        const points = await ChargingPoint.findAll({
+            where: { status: 'active' }, // Only show active points
+            include: [{ 
+                model: require('../models/User'), // Include Owner details
+                attributes: ['username', 'email'] 
+            }] 
+        });
+        
+        // Add full image URL to response
+        const pointsWithImages = points.map(point => {
+            const pointData = point.toJSON();
+            if (pointData.image) {
+                // Replace backslashes for URL compatibility
+                pointData.image = `http://localhost:5000/${pointData.image.replace(/\\/g, '/')}`;
+            }
+            return pointData;
+        });
+
+        res.json(pointsWithImages);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
