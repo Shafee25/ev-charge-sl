@@ -46,7 +46,7 @@ exports.getMyPoints = async (req, res) => {
 exports.getAllPoints = async (req, res) => {
     try {
         const points = await ChargingPoint.findAll({
-            where: { status: 'active' }, // Only show active points
+            where: { isApproved: true }, // Only show active points
             include: [{ 
                 model: require('../models/User'), // Include Owner details
                 attributes: ['username', 'email'] 

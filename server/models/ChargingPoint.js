@@ -5,6 +5,10 @@ const User = require("./User");
 const ChargingPoint = sequelize.define("ChargingPoint", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   title: { type: DataTypes.STRING, allowNull: false },
+  isApproved: { 
+        type: DataTypes.BOOLEAN, 
+        defaultValue: false // By default, stations are HIDDEN until approved
+    },
   description: { type: DataTypes.TEXT },
   address: { type: DataTypes.STRING, allowNull: false },
   latitude: { type: DataTypes.FLOAT, allowNull: false },

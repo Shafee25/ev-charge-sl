@@ -1,42 +1,42 @@
 const Booking = require('../models/Booking');
 const ChargingPoint = require('../models/ChargingPoint');
+const User = require('../models/User');
 
-// Create a new Booking
+// 1. Create a new Booking
 exports.createBooking = async (req, res) => {
     try {
         const { pointId, startTime, endTime } = req.body;
         const userId = req.user.id; // From JWT Token
 
-        // --- 🔒 NEW VALIDATION LOGIC ---
+        // --- VALIDATION LOGIC ---
         const start = new Date(startTime);
         const end = new Date(endTime);
         const now = new Date();
 
-        // 1. Check if Start Time is in the past
+        // Check if Start Time is in the past
         if (start < now) {
             return res.status(400).json({ message: "Booking time cannot be in the past." });
         }
 
-        // 2. Check if End Time is before Start Time
+        // Check if End Time is before Start Time
         if (end <= start) {
             return res.status(400).json({ message: "End time must be after start time." });
         }
+        // ------------------------
 
-        // 1. Get Point details to calculate price
+        // Get Point details to calculate price
         const point = await ChargingPoint.findByPk(pointId);
         if (!point) return res.status(404).json({ message: "Station not found" });
 
-        // 2. Calculate duration in hours
-        const start = new Date(startTime);
-        const end = new Date(endTime);
+        // Calculate duration in hours
         const hours = (end - start) / 36e5; // Divide milliseconds by 3.6e6 to get hours
 
         if (hours <= 0) return res.status(400).json({ message: "Invalid time duration" });
 
-        // 3. Calculate Price (Price per Kwh is a proxy for hourly rate in this simple v1)
+        // Calculate Price
         const estimatedPrice = hours * point.pricePerKwh; 
 
-        // 4. Save Booking
+        // Save Booking
         const newBooking = await Booking.create({
             userId,
             pointId,
@@ -53,12 +53,13 @@ exports.createBooking = async (req, res) => {
     }
 };
 
-// Get User's Bookings
+// 2. Get User's Bookings
 exports.getMyBookings = async (req, res) => {
     try {
         const bookings = await Booking.findAll({
             where: { userId: req.user.id },
-            include: [{ model: ChargingPoint, attributes: ['title', 'address'] }]
+            include: [{ model: ChargingPoint, attributes: ['title', 'address'] }],
+            order: [['startTime', 'DESC']]
         });
         res.json(bookings);
     } catch (error) {
@@ -66,6 +67,7 @@ exports.getMyBookings = async (req, res) => {
     }
 };
 
+// 3. Get Incoming Bookings for an Owner
 exports.getOwnerBookings = async (req, res) => {
     try {
         const bookings = await Booking.findAll({
@@ -76,8 +78,8 @@ exports.getOwnerBookings = async (req, res) => {
                     attributes: ['title']
                 },
                 {
-                    model: require('../models/User'), // Include who booked it
-                    attributes: ['username', 'email', 'phone']
+                    model: User, // Include who booked it
+                    attributes: ['username', 'email']
                 }
             ],
             order: [['createdAt', 'DESC']]
@@ -88,7 +90,7 @@ exports.getOwnerBookings = async (req, res) => {
     }
 };
 
-// 2. Update Booking Status (Approve/Reject)
+// 4. Update Booking Status (Approve/Reject)
 exports.updateBookingStatus = async (req, res) => {
     try {
         const { status } = req.body; // 'approved' or 'rejected'
@@ -97,10 +99,6 @@ exports.updateBookingStatus = async (req, res) => {
         const booking = await Booking.findByPk(id);
         if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-        // Security: Ensure the person updating owns the station
-        // (In a real app, we would query the ChargingPoint to check ownerId, 
-        // but for now, we assume the route is protected enough for this phase)
-        
         booking.status = status;
         await booking.save();
 
