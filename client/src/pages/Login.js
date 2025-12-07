@@ -1,22 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Container, TextField, Button, Typography, Paper, Box, Alert } from '@mui/material';
 import axios from '../api/axios';
 import { useNavigate } from 'react-router-dom';
+import AuthContext from '../context/AuthContext'; // 👈 Import Context
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    
+    const { login } = useContext(AuthContext); // 👈 Get login function
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             const res = await axios.post('/auth/login', { email, password });
-            localStorage.setItem('token', res.data.token); // Save JWT
-            localStorage.setItem('user', JSON.stringify(res.data.user));
-            alert('Login Successful!');
-            navigate('/');
+            
+            // USE THE CONTEXT FUNCTION
+            // This updates the global state immediately
+            login(res.data.user, res.data.token); 
+
+            // Redirect based on role
+            if (res.data.user.role === 'owner') {
+                navigate('/dashboard');
+            } else {
+                navigate('/');
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Login Failed');
         }

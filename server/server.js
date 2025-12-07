@@ -4,6 +4,7 @@ const sequelize = require('./config/db'); // Database connection
 const authRoutes = require('./routes/authRoutes');
 const pointRoutes = require('./routes/pointRoutes');
 const path = require('path'); // Node native module for file paths
+const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // --- Routes ---
 app.use('/api/auth', authRoutes);
 app.use('/api/points', pointRoutes);
+app.use('/api/bookings', bookingRoutes); // 👈 Add this line
 
 // --- Server Start & Database Sync ---
 const PORT = process.env.PORT || 5000;
@@ -28,5 +30,6 @@ sequelize.sync({ alter: true })
     .then(() => {
         console.log("✅ Database Connected & Synced");
         app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+        console.log("✅ Database Synced with Booking Table");
     })
     .catch((err) => console.log("❌ Database Error:", err));
