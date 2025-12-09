@@ -57,7 +57,7 @@ const NavBar = () => {
           component={Link}
           to="/"
         >
-          ⚡ EV Charge SL
+           EV Charge SL
         </Typography>
 
         {/* Always Show Home/Search */}
